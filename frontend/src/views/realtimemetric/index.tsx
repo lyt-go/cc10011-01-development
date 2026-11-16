@@ -78,6 +78,11 @@ export default function RealtimemetricView() {
       if (!response.ok) {
         throw new Error('实时指标动作未生效，请稍后重试')
       }
+      const result = await response.json()
+      if (result.ok === false) {
+        setErrorMessage(result.message)
+        return
+      }
       await reload()
     } catch (error) {
       setErrorMessage(error instanceof Error ? error.message : '实时指标操作失败')

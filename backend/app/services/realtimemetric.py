@@ -55,6 +55,14 @@ class RealtimemetricService:
         target = ACTION_RULES[action]
         if target not in STATUS_ORDER:
             return None, f"目标状态「{target}」不在允许的状态序列里"
+        # 状态只能沿 草稿 -> 定义评审中 -> 已上线 -> 已下线 单向相邻推进，不能跳步或倒回。
+        current_index = STATUS_ORDER.index(entry["status"])
+        target_index = STATUS_ORDER.index(target)
+        if target_index != current_index + 1:
+            return None, (
+                f"生命周期只能单向逐段推进：当前「{entry['status']}」不能执行「{action}」，"
+                f"合法顺序为 {' -> '.join(STATUS_ORDER)}"
+            )
         entry["status"] = target
         entry["pending"] = target != STATUS_ORDER[-1]
         entry["abnormal"] = action in NEGATIVE_ACTIONS

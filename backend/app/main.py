@@ -11,8 +11,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from app.config import settings
 from app.routers import ROUTERS
 from app.store import store
+from app.chain_seed import seed_chain_tables
 
 app = FastAPI(title="实时指标计算与监控大盘平台", version="1.0.0")
+
+# 口径链演示数据按表幂等注册：重启不覆盖只追加的结果数据集。
+seed_chain_tables()
 
 app.add_middleware(
     CORSMiddleware,

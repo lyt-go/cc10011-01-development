@@ -3,6 +3,7 @@ import { Link, Route, Routes } from 'react-router-dom'
 
 import Overview from './views/Overview'
 import RealtimemetricView from './views/realtimemetric'
+import MetricChainView from './views/metricchain'
 import DashboardView from './views/dashboard'
 import DrilldownView from './views/drilldown'
 import ThresholdView from './views/threshold'
@@ -21,7 +22,7 @@ import SubscriptionView from './views/subscription'
 import DimensionmapView from './views/dimensionmap'
 import QualityscoreView from './views/qualityscore'
 
-const navItems = [{ label: "运营概览", path: "/" }, { label: "实时指标", path: "/realtimemetric" }, { label: "监控大盘", path: "/dashboard" }, { label: "多维下钻", path: "/drilldown" }, { label: "阈值管理", path: "/threshold" }, { label: "异常检测", path: "/anomalydetect" }, { label: "数据服务", path: "/dataservice" }, { label: "告警历史", path: "/alarmhistory" }, { label: "同比环比", path: "/comparison" }, { label: "聚合配置", path: "/aggregate" }, { label: "筛选预设", path: "/filterpreset" }, { label: "用户洞察", path: "/userinsight" }, { label: "事件分析", path: "/eventanalysis" }, { label: "分群画像", path: "/segmentprofile" }, { label: "趋势预测", path: "/trendforecast" }, { label: "可视化模板", path: "/viztemplate" }, { label: "订阅推送", path: "/subscription" }, { label: "维度映射", path: "/dimensionmap" }, { label: "数据质量分", path: "/qualityscore" }]
+const navItems = [{ label: "运营概览", path: "/" }, { label: "实时指标", path: "/realtimemetric" }, { label: "指标口径链", path: "/metricchain" }, { label: "监控大盘", path: "/dashboard" }, { label: "多维下钻", path: "/drilldown" }, { label: "阈值管理", path: "/threshold" }, { label: "异常检测", path: "/anomalydetect" }, { label: "数据服务", path: "/dataservice" }, { label: "告警历史", path: "/alarmhistory" }, { label: "同比环比", path: "/comparison" }, { label: "聚合配置", path: "/aggregate" }, { label: "筛选预设", path: "/filterpreset" }, { label: "用户洞察", path: "/userinsight" }, { label: "事件分析", path: "/eventanalysis" }, { label: "分群画像", path: "/segmentprofile" }, { label: "趋势预测", path: "/trendforecast" }, { label: "可视化模板", path: "/viztemplate" }, { label: "订阅推送", path: "/subscription" }, { label: "维度映射", path: "/dimensionmap" }, { label: "数据质量分", path: "/qualityscore" }]
 
 export default function App() {
   const [operator] = useState('值班管理员')
@@ -46,6 +47,7 @@ export default function App() {
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/realtimemetric" element={<RealtimemetricView />} />
+          <Route path="/metricchain" element={<MetricChainView />} />
           <Route path="/dashboard" element={<DashboardView />} />
           <Route path="/drilldown" element={<DrilldownView />} />
           <Route path="/threshold" element={<ThresholdView />} />

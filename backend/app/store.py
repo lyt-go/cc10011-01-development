@@ -21,6 +21,15 @@ class Store:
     def rows(self, module: str) -> list[dict[str, Any]]:
         return self._tables.setdefault(module, [])
 
+    def ensure_table(self, module: str, seed_rows: list[dict[str, Any]] | None = None) -> list[dict[str, Any]]:
+        """口径链等新模块的表按需注册：已存在则原样返回，保证种子逻辑可重复执行。"""
+        if module not in self._tables:
+            self._tables[module] = [dict(row) for row in (seed_rows or [])]
+        return self._tables[module]
+
+    def next_id(self, module: str) -> int:
+        return max((int(row.get("id", 0)) for row in self.rows(module)), default=0) + 1
+
     def find(self, module: str, entry_id: int) -> dict[str, Any] | None:
         for row in self.rows(module):
             if int(row.get("id", 0)) == entry_id:

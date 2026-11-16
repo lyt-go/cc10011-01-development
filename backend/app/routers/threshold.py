@@ -30,6 +30,32 @@ def list_entries(
     return PageResult(items=items, total=total, page=page, size=size)
 
 
+@router.get("/export")
+def export_entries() -> dict[str, Any]:
+    """导出阈值管理清单：返回当前过滤条件下的全量数据。"""
+    items, total = service.list_entries(page=1, size=10000)
+    return {"module": "threshold", "total": total, "items": items}
+
+
+@router.get("/bindings", response_model=dict)
+def version_bindings() -> dict[str, Any]:
+    """阈值清单随指标版本变化同步更新的绑定视图。"""
+    items = service.version_bindings()
+    return {"total": len(items), "items": items}
+
+
+@router.post("/{entry_id}/bind-version", response_model=ActionResult)
+def bind_version(entry_id: int, payload: EntryPayload) -> ActionResult:
+    """把阈值规则绑定到已上线且未失效的指标定义版本。"""
+    version_code = str(payload.values.get("版本编号") or "").strip()
+    if not version_code:
+        return ActionResult(ok=False, message="缺少必填字段：版本编号")
+    entry, message = service.bind_version(entry_id, version_code)
+    if entry is None:
+        return ActionResult(ok=False, message=message)
+    return ActionResult(ok=True, message=message, entry=entry)
+
+
 @router.get("/{entry_id}", response_model=dict)
 def get_entry(entry_id: int) -> dict:
     """读取单条阈值规则明细；不存在时给出可读的错误说明。"""
@@ -56,10 +82,3 @@ def run_action(entry_id: int, payload: EntryPayload) -> ActionResult:
     if entry is None:
         return ActionResult(ok=False, message=message)
     return ActionResult(ok=True, message=message, entry=entry)
-
-
-@router.get("/export")
-def export_entries() -> dict[str, Any]:
-    """导出阈值管理清单：返回当前过滤条件下的全量数据。"""
-    items, total = service.list_entries(page=1, size=10000)
-    return {"module": "threshold", "total": total, "items": items}

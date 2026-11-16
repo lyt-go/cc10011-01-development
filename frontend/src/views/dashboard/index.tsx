@@ -3,6 +3,7 @@ import { useCallback, useEffect, useMemo, useState } from 'react'
 import { request } from '@/api/client'
 
 const ENDPOINT = '/api/dashboard'
+const CHAIN_REFRESH = '/api/realtimemetric/chain/dashboard-refresh'
 const columns = [
   "大盘编号",
   "大盘名称",
@@ -40,13 +41,34 @@ const stats = [
 ]
 
 type Row = Record<string, string | number | null>
+type ChainCard = Record<string, any>
 
 export default function DashboardView() {
   const [rows, setRows] = useState<Row[]>([])
   const [total, setTotal] = useState(0)
   const [errorMessage, setErrorMessage] = useState('')
   const [filters, setFilters] = useState<Record<string, string>>({})
+  const [chainCards, setChainCards] = useState<ChainCard[] | null>(null)
+  const [refreshTime, setRefreshTime] = useState('')
   const filterFields = useMemo(() => columns.slice(0, 3), [])
+
+  const refreshChain = useCallback(async () => {
+    try {
+      const response = await request(CHAIN_REFRESH)
+      if (!response.ok) {
+        throw new Error('大盘刷新结果读取失败')
+      }
+      const payload = await response.json()
+      setChainCards(payload['卡片'] ?? [])
+      setRefreshTime(payload['刷新时间'] ?? '')
+    } catch (error) {
+      setErrorMessage(error instanceof Error ? error.message : '大盘刷新失败')
+    }
+  }, [])
+
+  useEffect(() => {
+    void refreshChain()
+  }, [refreshChain])
 
   const reload = useCallback(async () => {
     setErrorMessage('')
@@ -108,6 +130,33 @@ export default function DashboardView() {
             <strong className="stat-value">{item.value}</strong>
           </article>
         ))}
+      </div>
+
+      <div className="chain-panel">
+        <div className="chain-panel-head">
+          <h3>实时指标口径链刷新结果</h3>
+          <button className="btn primary" type="button" onClick={() => void refreshChain()}>立即刷新</button>
+        </div>
+        {refreshTime && <p className="muted-text">刷新时间：{refreshTime}；每张卡片明确标注所用指标版本与数据新鲜度</p>}
+        <div className="card-grid">
+          {(chainCards ?? []).map((card) => (
+            <article key={card['所用指标版本']} className="metric-card">
+              <header>
+                <strong>{card['指标名称']}</strong>
+                <span className="badge badge-online">{card['所用指标版本']}</span>
+              </header>
+              <p className="metric-value">{card['最新指标值'] ?? '暂无计算结果'}</p>
+              <dl className="kv-list compact">
+                <div className="kv-row"><dt>指标编号</dt><dd>{card['指标编号']}</dd></div>
+                <div className="kv-row"><dt>计算窗口秒</dt><dd>{card['计算窗口秒']}</dd></div>
+                <div className="kv-row"><dt>数据新鲜度(秒)</dt><dd>{card['数据新鲜度秒'] ?? '—'}</dd></div>
+                <div className="kv-row"><dt>窗口覆盖率</dt><dd>{card['窗口覆盖率'] ?? '—'}</dd></div>
+                <div className="kv-row"><dt>定义指纹</dt><dd>{card['定义内容哈希']}</dd></div>
+              </dl>
+            </article>
+          ))}
+          {chainCards && chainCards.length === 0 && <p className="empty-state">当前没有已上线的指标版本</p>}
+        </div>
       </div>
 
       <form className="filter-bar" onSubmit={(event) => { event.preventDefault(); void reload() }}>
